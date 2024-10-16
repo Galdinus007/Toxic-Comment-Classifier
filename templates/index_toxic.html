@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeechSentry</title>
+  <link rel="icon" href="{{ url_for('static', filename='22.jpg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #000000;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; /* Changed to height */
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .login {
+      background: linear-gradient(to right, #080808, #090C1E, #080808);
+      border-radius: 10px;
+      border: 3px solid #191970;
+      box-shadow: 0 4px 20px rgb(3, 9, 125);
+      margin: 20px auto; /* Adjusted margin */
+      padding: 40px;
+      max-width: 600px; /* Set a max-width */
+      width: 100%; /* Use full width */
+      animation: slideIn 1s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    h1 {
+      font-family: 'Courier New', Courier, monospace;
+      background: -webkit-linear-gradient(#eee, #333);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px; /* Changed to margin-bottom */
+      font-size: 50px;
+      animation: bounceIn 1s ease-in;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    input[type="text"] {
+      width: calc(100% - 40px);
+      padding: 15px;
+      font-size: 20px;
+      border: 3px solid rgb(16, 22, 72);
+      border-radius: 15px;
+      background-color: black;
+      color: white;
+      margin-bottom: 20px; /* Changed to margin-bottom */
+      transition: border-color 0.5s;
+      outline: none;
+      box-shadow: 0 4px 20px rgb(16, 22, 72);
+    }
+
+    input[type="text"]:focus {
+      border-color: white;
+    }
+
+    button {
+      background-color: black;
+      color: white;
+      border: 3px solid white;
+      padding: 10px 10px;
+      font-size: 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      width: 40%; /* Full width button */
+    }
+
+    button:hover {
+      background-color: white;
+      color: black;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .results h3 {
+      font-family: 'Courier New', Courier, monospace;
+      background: linear-gradient(180deg, silver, #eee);
+      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      font-size: 24px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body onload="myFunction()">
+  <div class="login">
+    <h1>Is your comment toxic?</h1>
+    <form action="{{ url_for('predict') }}" method="post">
+      <input id="text" type="text" name="text" placeholder="Enter your text" required>
+      <button id="button" type="submit">Predict</button>
+    </form>
+    <div class="results">
+      <h3>{{ pred_tox }}<br><br>
+      {{ pred_sev }}<br><br>
+      {{ pred_obs }}<br><br>
+      {{ pred_ins }}<br><br>
+      {{ pred_thr }}<br><br>
+      {{ pred_ide }}</h3>
+    </div>
+  </div>
+</body>
+</html>
