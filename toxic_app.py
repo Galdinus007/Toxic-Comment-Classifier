@@ -1,48 +1,72 @@
-from sklearn.ensemble import RandomForestClassifier
+"""toxic_app.py
+
+Safe loading of optional model/vectorizer pickle files so the Flask app
+can run even if those artifacts aren't present. If real artifacts are
+present they will be used.
+"""
+
 from flask import Flask, render_template, request
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import RandomForestClassifier
 import pickle
 import numpy as np
+import os
+
+# optional sklearn imports; fall back to dummy classes if unavailable
+SKLEARN_AVAILABLE = True
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.ensemble import RandomForestClassifier
+except Exception:
+    SKLEARN_AVAILABLE = False
 
 app = Flask(__name__)
 
-with open("toxic_vect.pkl", "rb") as f:
-    tox = pickle.load(f)
 
-with open("severe_toxic_vect.pkl", "rb") as f:
-    sev = pickle.load(f)
-
-with open("obscene_vect.pkl", "rb") as f:
-    obs = pickle.load(f)
-
-with open("insult_vect.pkl", "rb") as f:
-    ins = pickle.load(f)
-
-with open("threat_vect.pkl", "rb") as f:
-    thr = pickle.load(f)
-
-with open("identity_hate_vect.pkl", "rb") as f:
-    ide = pickle.load(f)
+class DummyVectorizer:
+    def transform(self, data):
+        return np.zeros((len(data), 1))
 
 
-with open("toxic_model.pkl", "rb") as f:
-    tox_model = pickle.load(f)
+class DummyModel:
+    def predict_proba(self, X):
+        n = X.shape[0]
+        # (n_samples, 2) -> prob for classes [0, 1]
+        return np.hstack([np.ones((n, 1)) * 0.5, np.ones((n, 1)) * 0.5])
 
-with open("severe_toxic_model.pkl", "rb") as f:
-    sev_model = pickle.load(f)
 
-with open("obscene_model.pkl", "rb") as f:
-    obs_model = pickle.load(f)
+def load_pickle_or_dummy(path, kind="model"):
+    if os.path.exists(path):
+        try:
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        except Exception as e:
+            print(f"Warning: failed loading {path}: {e}")
 
-with open("insult_model.pkl", "rb") as f:
-    ins_model = pickle.load(f)
+    # create a reasonable dummy depending on kind
+    if kind == "vect":
+        if SKLEARN_AVAILABLE:
+            return TfidfVectorizer()
+        return DummyVectorizer()
+    else:
+        if SKLEARN_AVAILABLE:
+            return RandomForestClassifier()
+        return DummyModel()
 
-with open("threat_model.pkl", "rb") as f:
-    thr_model = pickle.load(f)
 
-with open("identity_hate_model.pkl", "rb") as f:
-    ide_model = pickle.load(f)
+# vectorizers
+tox = load_pickle_or_dummy("toxic_vect.pkl", kind="vect")
+sev = load_pickle_or_dummy("severe_toxic_vect.pkl", kind="vect")
+obs = load_pickle_or_dummy("obscene_vect.pkl", kind="vect")
+ins = load_pickle_or_dummy("insult_vect.pkl", kind="vect")
+thr = load_pickle_or_dummy("threat_vect.pkl", kind="vect")
+ide = load_pickle_or_dummy("identity_hate_vect.pkl", kind="vect")
+
+# models
+tox_model = load_pickle_or_dummy("toxic_model.pkl", kind="model")
+sev_model = load_pickle_or_dummy("severe_toxic_model.pkl", kind="model")
+obs_model = load_pickle_or_dummy("obscene_model.pkl", kind="model")
+ins_model = load_pickle_or_dummy("insult_model.pkl", kind="model")
+thr_model = load_pickle_or_dummy("threat_model.pkl", kind="model")
+ide_model = load_pickle_or_dummy("identity_hate_model.pkl", kind="model")
 
 @app.route("/")
 def home():
